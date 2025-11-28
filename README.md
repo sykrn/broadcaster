@@ -1,15 +1,28 @@
 # Screen Broadcaster 📡
 
-A clean and simple web-based screen sharing application built with WebRTC technology. Share your screen with multiple viewers in real-time with low latency and efficient bandwidth usage.
+A clean and modern web-based screen sharing application built with WebRTC technology. Share your screen with multiple viewers in real-time with low latency and efficient bandwidth usage.
 
 ## Features
 
+### Core Functionality
 - **Real-time Screen Sharing**: WebRTC-based peer-to-peer streaming
 - **Low Latency**: Uses UDP (via WebRTC's SRTP) for smooth, efficient streaming
-- **Multiple Viewers**: Support for multiple simultaneous viewers
+- **Multiple Viewers**: Support for unlimited simultaneous viewers
+- **Network Access**: Share across devices on the same Wi-Fi network
 - **Secure**: End-to-end encrypted via DTLS-SRTP
-- **Browser-Based**: No plugins required, works in modern browsers
-- **Modern UI**: Clean glassmorphic design with smooth animations
+
+### Viewer Controls
+- **⏮️ / ⏭️ Frame Stepping**: Navigate frame-by-frame when paused
+- **⏸️ Play/Pause**: Control video playback
+- **🖼️ Picture-in-Picture**: Pop video into floating window
+- **⛶ Fullscreen**: Full screen mode with auto-rotation on mobile
+- **Responsive Layout**: Optimized for mobile and desktop
+
+### User Experience
+- **Modern Glassmorphic UI**: Sleek design with smooth animations
+- **Auto IP Detection**: Server automatically finds your local network IP
+- **One-Click Copy**: Easy sharing with copy-to-clipboard button
+- **Mobile Optimized**: Controls adapt to screen size, auto-rotate to landscape
 
 ## Technology Stack
 
@@ -17,13 +30,6 @@ A clean and simple web-based screen sharing application built with WebRTC techno
 - **Real-time Communication**: Socket.IO for signaling
 - **Streaming**: WebRTC (uses UDP internally via SRTP)
 - **Frontend**: Vanilla HTML/CSS/JavaScript
-
-## How It Works
-
-1. **Broadcaster** starts screen sharing using the browser's Screen Capture API
-2. **WebRTC** establishes peer-to-peer connections with viewers
-3. **Socket.IO** handles the signaling (offer/answer/ICE candidates)
-4. **Media streams** flow directly between broadcaster and viewers via WebRTC (UDP-based)
 
 ## Installation
 
@@ -42,27 +48,85 @@ Or for development with auto-reload:
 npm run dev
 ```
 
-3. Open your browser and navigate to:
+3. Server will start and display:
 ```
-http://localhost:3000
+Server running on:
+  Local:   http://localhost:3000
+  Network: http://192.168.100.102:3000
+
+Share this URL for viewers on your network:
+  http://192.168.100.102:3000/viewer.html
 ```
 
 ## Usage
 
 ### As a Broadcaster
 
-1. Go to the home page and click "Start Broadcasting"
-2. Click the "🎥 Start Broadcasting" button
-3. Select the screen/window you want to share
-4. Share the viewer URL with your audience
-5. See the viewer count in real-time
-6. Click "Stop Broadcasting" when done
+1. Open `http://localhost:3000/broadcast.html` in your browser
+2. Click **"🎥 Start Broadcasting"** button
+3. Select the screen/window you want to share in the browser dialog
+4. Click **"Share"** or **"Allow"** to grant permission
+5. A **shareable viewer URL** will appear with a **📋 Copy** button
+6. Share this URL with your audience
+7. Monitor the **viewer count** in real-time
+8. Click **"⏹️ Stop Broadcasting"** when done
 
 ### As a Viewer
 
-1. Go to the home page and click "Watch Broadcast"
-2. Wait for the broadcaster to start sharing
-3. The screen will appear automatically when broadcast begins
+1. Open the viewer URL shared by the broadcaster:
+   - **Same device**: `http://localhost:3000/viewer.html`
+   - **Network device**: `http://192.168.100.102:3000/viewer.html`
+2. Wait for the broadcaster to start (if not already broadcasting)
+3. Video will appear automatically once broadcast begins
+4. Use playback controls to interact with the stream
+
+### Viewer Controls
+
+**Playback Controls (First Row):**
+- **⏮️** Previous Frame - Step backward one frame (when paused)
+- **⏸️ Pause / ▶️ Play** - Pause or resume the stream
+- **⏭️** Next Frame - Step forward one frame (when paused)
+
+**View Mode Controls (Second Row):**
+- **🖼️ PiP** - Enter Picture-in-Picture mode (floating window)
+- **⛶ Fullscreen** - Enter fullscreen mode
+  - **Mobile**: Automatically rotates to landscape orientation
+
+**Tips:**
+- Pause the video to use frame-by-frame navigation
+- PiP mode keeps video on top while you work in other apps
+- Fullscreen provides immersive viewing, especially on mobile
+
+## Network Access
+
+### Accessing from Other Devices
+
+The application supports **local network streaming**:
+
+1. **Start broadcasting** on your main computer
+2. **Get the network URL** displayed on the broadcaster page
+3. **Share the URL** with viewers on the same Wi-Fi network
+4. **Open the URL** on phones, tablets, or other computers
+
+**Example URLs:**
+- Local: `http://localhost:3000/viewer.html`
+- Network: `http://192.168.100.102:3000/viewer.html`
+
+### Troubleshooting Network Access
+
+**Can't connect from another device?**
+
+1. **Check firewall**: Ensure your Mac allows incoming connections on port 3000
+   - Go to: System Settings → Network → Firewall
+   - Allow Node.js or the broadcaster app
+
+2. **Verify network**: Both devices must be on the **same Wi-Fi network**
+   - Don't use VPN on either device
+
+3. **Test connection**: From another device, try pinging the server:
+   ```bash
+   ping 192.168.100.102
+   ```
 
 ## Architecture
 
@@ -79,13 +143,12 @@ http://localhost:3000
 
 ### Why WebRTC?
 
-WebRTC was chosen for this application because:
+WebRTC was chosen because it's the **optimal solution** for real-time browser-based streaming:
 
-1. **UDP-based**: Uses UDP for media transmission (via SRTP), providing lower latency than TCP
-2. **Peer-to-Peer**: Direct connections reduce server load
-3. **Built-in**: Native browser support, no plugins needed
-4. **Secure**: Encrypted by default (DTLS-SRTP)
-5. **Efficient**: Adaptive bitrate and congestion control
+1. **UDP-based Media Transport** - Uses UDP internally for minimal latency
+2. **Peer-to-Peer Architecture** - Direct streams reduce server load
+3. **Security Built-in** - Mandatory encryption (DTLS-SRTP)
+4. **Browser Native** - Works in all modern browsers without plugins
 
 ## Browser Support
 
@@ -94,14 +157,36 @@ WebRTC was chosen for this application because:
 - Safari 12.1+
 - Edge 79+
 
+**Mobile Browsers:**
+- Chrome Mobile (Android)
+- Safari (iOS)
+- Firefox Mobile
+
 ## Configuration
 
 The application uses public STUN servers by default. For production use, consider:
 
-- Adding TURN servers for better connectivity
-- Implementing authentication
-- Adding room-based broadcasting
-- Bandwidth monitoring and quality controls
+- **TURN servers**: Better connectivity through restrictive firewalls
+- **Authentication**: Implement user authentication for broadcasters
+- **Room system**: Multiple independent broadcast rooms
+- **Recording**: Save broadcasts server-side
+- **Chat**: Real-time viewer chat functionality
+- **Quality controls**: Bandwidth and resolution settings
+
+## Features Comparison
+
+| Feature | Description | Status |
+|---------|-------------|--------|
+| Screen Sharing | Share your screen in real-time | ✅ |
+| Multiple Viewers | Unlimited simultaneous viewers | ✅ |
+| Network Access | Share across local network | ✅ |
+| Playback Controls | Pause, play, frame stepping | ✅ |
+| Picture-in-Picture | Floating window mode | ✅ |
+| Fullscreen | Full screen with auto-rotate | ✅ |
+| Mobile Optimized | Responsive controls | ✅ |
+| Viewer Count | Real-time viewer tracking | ✅ |
+| Auto IP Detection | Automatic network URL | ✅ |
+| Copy to Clipboard | Easy URL sharing | ✅ |
 
 ## License
 
