@@ -22,6 +22,42 @@
             </div>
         </div>
 
+        <div id="playbackControls" class="glass-card" style="display: none; margin-top: 1.5rem;">
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <!-- First row: Playback controls -->
+                <div style="display: flex; align-items: center; gap: 0.5rem; justify-content: center; flex-wrap: wrap;">
+                    <button id="prevFrameBtn" onclick="previousFrame()" title="Previous Frame"
+                        style="padding: 0.75rem 1rem; margin: 0.25rem;">
+                        <span>⏮️</span>
+                    </button>
+                    <button id="playPauseBtn" onclick="togglePlayPause()"
+                        style="padding: 0.75rem 2rem; margin: 0.25rem;">
+                        <span id="playPauseIcon">⏸️ Pause</span>
+                    </button>
+                    <button id="nextFrameBtn" onclick="nextFrame()" title="Next Frame"
+                        style="padding: 0.75rem 1rem; margin: 0.25rem;">
+                        <span>⏭️</span>
+                    </button>
+                </div>
+
+                <!-- Second row: View mode controls -->
+                <div style="display: flex; align-items: center; gap: 0.5rem; justify-content: center; flex-wrap: wrap;">
+                    <button id="pipBtn" onclick="togglePictureInPicture()" title="Picture-in-Picture"
+                        style="padding: 0.75rem 1.5rem; margin: 0.25rem;">
+                        <span>🖼️ PiP</span>
+                    </button>
+                    <button id="fullscreenBtn" onclick="toggleFullscreen()" title="Fullscreen"
+                        style="padding: 0.75rem 1.5rem; margin: 0.25rem;">
+                        <span id="fullscreenIcon">⛶ Fullscreen</span>
+                    </button>
+                </div>
+            </div>
+
+            <div style="margin-top: 1rem; text-align: center; color: var(--text-secondary); font-size: 0.9rem;">
+                <span id="frameInfo">Controls: ⏮️/⏭️ frame stepping • 🖼️ PiP • ⛶ fullscreen</span>
+            </div>
+        </div>
+
         <div id="videoContainer">
             <div class="glass-card placeholder" id="placeholder">
                 <div class="placeholder-icon">⏳</div>

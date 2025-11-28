@@ -7,6 +7,109 @@ const placeholder = document.getElementById('placeholder');
 
 let peerConnection = null;
 let broadcasterId = null;
+let isPlaying = true;
+const FRAME_STEP = 1 / 30; // ~30fps, step by one frame
+
+// Playback control functions
+function togglePlayPause() {
+    const video = remoteVideo;
+    const icon = document.getElementById('playPauseIcon');
+
+    if (isPlaying) {
+        video.pause();
+        icon.textContent = '▶️ Play';
+        isPlaying = false;
+        console.log('Video paused');
+    } else {
+        video.play();
+        icon.textContent = '⏸️ Pause';
+        isPlaying = true;
+        console.log('Video playing');
+    }
+}
+
+function previousFrame() {
+    const video = remoteVideo;
+    if (!video.paused) {
+        video.pause();
+        document.getElementById('playPauseIcon').textContent = '▶️ Play';
+        isPlaying = false;
+    }
+    video.currentTime = Math.max(0, video.currentTime - FRAME_STEP);
+    console.log('Previous frame, time:', video.currentTime);
+}
+
+function nextFrame() {
+    const video = remoteVideo;
+    if (!video.paused) {
+        video.pause();
+        document.getElementById('playPauseIcon').textContent = '▶️ Play';
+        isPlaying = false;
+    }
+    video.currentTime = Math.min(video.duration || video.currentTime + FRAME_STEP, video.currentTime + FRAME_STEP);
+    console.log('Next frame, time:', video.currentTime);
+}
+
+// Picture-in-Picture function
+async function togglePictureInPicture() {
+    const video = remoteVideo;
+
+    try {
+        if (document.pictureInPictureElement) {
+            // Exit PiP
+            await document.exitPictureInPicture();
+            console.log('Exited Picture-in-Picture mode');
+        } else {
+            // Enter PiP
+            await video.requestPictureInPicture();
+            console.log('Entered Picture-in-Picture mode');
+        }
+    } catch (err) {
+        console.error('Picture-in-Picture error:', err);
+        alert('Picture-in-Picture is not supported or allowed in this browser.');
+    }
+}
+
+// Fullscreen function
+async function toggleFullscreen() {
+    const container = document.getElementById('videoContainer');
+    const icon = document.getElementById('fullscreenIcon');
+
+    try {
+        if (document.fullscreenElement) {
+            // Exit fullscreen
+            await document.exitFullscreen();
+            icon.textContent = '⛶ Fullscreen';
+
+            // Unlock orientation
+            if (screen.orientation && screen.orientation.unlock) {
+                screen.orientation.unlock();
+                console.log('Orientation unlocked');
+            }
+
+            console.log('Exited fullscreen mode');
+        } else {
+            // Enter fullscreen
+            await container.requestFullscreen();
+            icon.textContent = '⛶ Exit Fullscreen';
+
+            // Lock to landscape orientation on mobile devices
+            if (screen.orientation && screen.orientation.lock) {
+                try {
+                    await screen.orientation.lock('landscape');
+                    console.log('Orientation locked to landscape');
+                } catch (err) {
+                    console.log('Orientation lock not supported or failed:', err.message);
+                }
+            }
+
+            console.log('Entered fullscreen mode');
+        }
+    } catch (err) {
+        console.error('Fullscreen error:', err);
+        alert('Fullscreen is not supported or allowed in this browser.');
+    }
+}
 
 // WebRTC configuration
 const configuration = {
@@ -83,6 +186,9 @@ socket.on('offer', async (data) => {
                 placeholder.style.display = 'none';
                 statusText.textContent = 'Connected - Watching broadcast';
                 statusDot.classList.add('connected');
+
+                // Show playback controls
+                document.getElementById('playbackControls').style.display = 'block';
             } else {
                 console.warn('No streams in track event');
             }
@@ -174,6 +280,11 @@ function handleDisconnection() {
     remoteVideo.classList.remove('active');
     placeholder.style.display = 'block';
     statusDot.classList.remove('connected');
+
+    // Hide playback controls
+    document.getElementById('playbackControls').style.display = 'none';
+    isPlaying = true;
+    document.getElementById('playPauseIcon').textContent = '⏸️ Pause';
 
     // Update placeholder
     const placeholderIcon = placeholder.querySelector('.placeholder-icon');
