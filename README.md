@@ -2,6 +2,17 @@
 
 A clean and modern web-based screen sharing application built with WebRTC technology. Share your screen with multiple viewers in real-time with low latency and efficient bandwidth usage.
 
+## Screenshots
+
+### Home Page
+![Home Page](screenshots/home.png)
+
+### Broadcaster Interface
+![Broadcaster Interface](screenshots/broadcaster.png)
+
+### Viewer Interface with Playback Controls
+![Viewer Interface](screenshots/viewer.png)
+
 ## Features
 
 ### Core Functionality
