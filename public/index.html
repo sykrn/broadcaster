@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Screen Broadcaster - Home</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .hero {
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .hero h2 {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            line-height: 1.8;
+            margin-bottom: 3rem;
+        }
+
+        .action-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .action-card {
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-glass);
+            border-radius: 24px;
+            padding: 2.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .action-card:hover {
+            border-color: var(--accent-primary);
+            box-shadow: 0 12px 48px rgba(99, 102, 241, 0.3);
+            transform: translateY(-8px);
+        }
+
+        .action-card-icon {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            filter: drop-shadow(0 4px 12px rgba(99, 102, 241, 0.3));
+        }
+
+        .action-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .action-card p {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            font-size: 1rem;
+        }
+
+        .features {
+            margin-top: 4rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .feature {
+            padding: 1.5rem;
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            border: 1px solid var(--border-glass);
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature h4 {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            color: var(--accent-primary);
+        }
+
+        .feature p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>📡 Screen Broadcaster</h1>
+        <p>Real-time screen sharing made simple and efficient</p>
+    </header>
+
+    <main>
+        <div class="hero">
+            <h2>Choose Your Role</h2>
+            <p>Share your screen with the world or watch broadcasts in real-time with WebRTC technology for smooth,
+                low-latency streaming.</p>
+        </div>
+
+        <div class="action-cards">
+            <a href="/broadcast.html" class="action-card">
+                <div class="action-card-icon">🎥</div>
+                <h3>Start Broadcasting</h3>
+                <p>Share your screen with viewers in real-time using WebRTC for low-latency streaming</p>
+            </a>
+
+            <a href="/viewer.html" class="action-card">
+                <div class="action-card-icon">👁️</div>
+                <h3>Watch Broadcast</h3>
+                <p>Connect to a live broadcast and watch screen sharing sessions</p>
+            </a>
+        </div>
+
+        <div class="features">
+            <div class="feature">
+                <div class="feature-icon">⚡</div>
+                <h4>Low Latency</h4>
+                <p>WebRTC uses UDP for real-time streaming with minimal delay</p>
+            </div>
+
+            <div class="feature">
+                <div class="feature-icon">🔒</div>
+                <h4>Secure</h4>
+                <p>End-to-end encrypted connections via DTLS-SRTP</p>
+            </div>
+
+            <div class="feature">
+                <div class="feature-icon">🌐</div>
+                <h4>Browser-Based</h4>
+                <p>No plugins required, works directly in modern browsers</p>
+            </div>
+
+            <div class="feature">
+                <div class="feature-icon">👥</div>
+                <h4>Multiple Viewers</h4>
+                <p>Support for multiple simultaneous viewers</p>
+            </div>
+        </div>
+    </main>
+</body>
+
+</html>

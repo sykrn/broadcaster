@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Watch - Screen Broadcaster</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <header>
+        <h1>👁️ Screen Viewer</h1>
+        <p>Watch live screen sharing broadcasts</p>
+    </header>
+
+    <main>
+        <div id="controls" class="glass-card">
+            <div id="status">
+                <span class="status-dot"></span>
+                <span id="statusText">Connecting...</span>
+            </div>
+        </div>
+
+        <div id="videoContainer">
+            <div class="glass-card placeholder" id="placeholder">
+                <div class="placeholder-icon">⏳</div>
+                <h2>Waiting for Broadcast</h2>
+                <p>The stream will appear here when the broadcaster starts</p>
+            </div>
+            <video id="remoteVideo" autoplay playsinline muted></video>
+        </div>
+    </main>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="viewer.js"></script>
+</body>
+
+</html>
