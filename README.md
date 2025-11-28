@@ -20,6 +20,8 @@ A clean and modern web-based screen sharing application built with WebRTC techno
 - **Low Latency**: Uses UDP (via WebRTC's SRTP) for smooth, efficient streaming
 - **Multiple Viewers**: Support for unlimited simultaneous viewers
 - **Network Access**: Share across devices on the same Wi-Fi network
+- **Fully Offline**: Works on local network without internet connection
+- **No External Dependencies**: No STUN/TURN servers required for local network
 - **Secure**: End-to-end encrypted via DTLS-SRTP
 
 ### Viewer Controls
@@ -139,6 +141,34 @@ The application supports **local network streaming**:
    ping 192.168.100.102
    ```
 
+## Offline Operation
+
+**This application works completely offline on your local network!**
+
+### No Internet Required
+
+The application is configured to work **without any internet connection**:
+
+- ✅ **No STUN servers** - Doesn't require Google's servers
+- ✅ **No TURN servers** - Direct peer-to-peer connections
+- ✅ **No external dependencies** - Everything runs locally
+- ✅ **Perfect for isolated networks** - Corporate, schools, offline events
+
+### How It Works Offline
+
+1. **Server runs locally** on your computer (localhost:3000)
+2. **WebRTC uses local IPs** - Devices discover each other via local network
+3. **Direct connections** - Video streams flow peer-to-peer on your LAN
+4. **No internet needed** - As long as devices are on the same Wi-Fi/LAN
+
+### Use Cases
+
+- **Corporate presentations** - Share in conference rooms without internet
+- **Schools/Education** - Classroom broadcasting on local network
+- **Events** - Display screens at venues with unreliable internet
+- **Privacy** - Keep all data on local network, nothing goes to cloud
+- **Remote locations** - Works anywhere with just local Wi-Fi
+
 ## Architecture
 
 ```
@@ -175,9 +205,31 @@ WebRTC was chosen because it's the **optimal solution** for real-time browser-ba
 
 ## Configuration
 
-The application uses public STUN servers by default. For production use, consider:
+### Current Setup (Offline Local Network)
 
-- **TURN servers**: Better connectivity through restrictive firewalls
+The application is configured for **local network operation without internet**:
+- No STUN/TURN servers required
+- Direct peer-to-peer connections on LAN
+- Works completely offline
+
+### Optional: Adding STUN/TURN for Internet Use
+
+If you need to broadcast **over the internet** (not just local network), you can add STUN/TURN servers:
+
+```javascript
+// In broadcast.js and viewer.js
+const configuration = {
+  iceServers: [
+    { urls: 'stun:stun.l.google.com:19302' },
+    // For production, add TURN servers for better connectivity
+  ]
+};
+```
+
+### Production Enhancements
+
+For production deployment, consider:
+- **TURN servers**: Better connectivity through restrictive firewalls (for internet use)
 - **Authentication**: Implement user authentication for broadcasters
 - **Room system**: Multiple independent broadcast rooms
 - **Recording**: Save broadcasts server-side

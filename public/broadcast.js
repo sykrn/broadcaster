@@ -42,11 +42,10 @@ function copyViewerUrl(event) {
 }
 
 // WebRTC configuration
+// Empty iceServers array allows fully local network operation without internet
+// Devices on the same network can connect directly without STUN/TURN servers
 const configuration = {
-    iceServers: [
-        { urls: 'stun:stun.l.google.com:19302' },
-        { urls: 'stun:stun1.l.google.com:19302' }
-    ]
+    iceServers: []
 };
 
 // Start broadcasting
