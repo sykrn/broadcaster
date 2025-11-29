@@ -1,7 +1,7 @@
 const socket = io();
 
-const startButton = document.getElementById('startBroadcast');
-const stopButton = document.getElementById('stopBroadcast');
+const startButton = document.getElementById('startButton');
+const stopButton = document.getElementById('stopButton');
 const statusText = document.getElementById('statusText');
 const statusDot = document.querySelector('.status-dot');
 const viewerCountDiv = document.getElementById('viewerCount');
@@ -10,13 +10,32 @@ const viewerCountNumber = document.getElementById('viewerCountNumber');
 let localStream = null;
 let peerConnections = new Map(); // viewerId -> RTCPeerConnection
 let viewerCount = 0;
+let currentSessionId = null;
+
+// Validate session name
+function validateSessionName(name) {
+    const pattern = /^[a-zA-Z0-9-_]+$/;
+    if (!name || name.length === 0) {
+        return { valid: false, error: 'Session name is required' };
+    }
+    if (!pattern.test(name)) {
+        return { valid: false, error: 'Session name can only contain letters, numbers, hyphens, and underscores' };
+    }
+    if (name.length < 3) {
+        return { valid: false, error: 'Session name must be at least 3 characters' };
+    }
+    if (name.length > 50) {
+        return { valid: false, error: 'Session name must be less than 50 characters' };
+    }
+    return { valid: true };
+}
 
 // Get network URL for sharing
 async function getNetworkUrl() {
     try {
         const response = await fetch('/api/server-ip');
         const data = await response.json();
-        return `http://${data.ip}:${data.port}/viewer.html`;
+        return `http://${data.ip}:${data.port}/viewer.html?id=${currentSessionId}`;
     } catch (err) {
         console.error('Error fetching server IP:', err);
         // Fallback to current location
@@ -24,7 +43,7 @@ async function getNetworkUrl() {
         const hostname = window.location.hostname;
         const port = window.location.port;
         const portStr = port ? `:${port}` : '';
-        return `${protocol}//${hostname}${portStr}/viewer.html`;
+        return `${protocol}//${hostname}${portStr}/viewer.html?id=${currentSessionId}`;
     }
 }
 
@@ -51,6 +70,20 @@ const configuration = {
 // Start broadcasting
 startButton.addEventListener('click', async () => {
     try {
+        // Get and validate session name
+        const sessionName = document.getElementById('sessionName').value.trim();
+        const validation = validateSessionName(sessionName);
+
+        const sessionError = document.getElementById('sessionError');
+        if (!validation.valid) {
+            sessionError.textContent = validation.error;
+            sessionError.style.display = 'block';
+            return;
+        }
+
+        sessionError.style.display = 'none';
+        currentSessionId = sessionName;
+
         console.log('Requesting screen capture...');
 
         // Request screen capture
@@ -75,9 +108,10 @@ startButton.addEventListener('click', async () => {
         };
 
         // Update UI
+        document.getElementById('sessionSetup').style.display = 'none';
         startButton.style.display = 'none';
         stopButton.style.display = 'inline-block';
-        statusText.textContent = 'Broadcasting...';
+        statusText.textContent = `Broadcasting session: ${currentSessionId}`;
         statusDot.classList.add('broadcasting');
         viewerCountDiv.style.display = 'inline-block';
 
@@ -88,34 +122,36 @@ startButton.addEventListener('click', async () => {
         viewerUrl.textContent = url;
         networkInfo.style.display = 'block';
 
-        // Join as broadcaster
-        console.log('Emitting join-broadcast');
-        socket.emit('join-broadcast');
+        // Join as broadcaster with session ID
+        console.log('Emitting join-broadcast with session:', currentSessionId);
+        socket.emit('join-broadcast', currentSessionId);
 
         console.log('Broadcasting started successfully');
     } catch (err) {
         console.error('Error starting broadcast:', err);
         alert('Failed to start broadcast. Please make sure you granted screen sharing permission.');
+        currentSessionId = null;
     }
 });
 
 // Stop broadcasting
-stopButton.addEventListener('click', () => {
-    stopBroadcast();
-});
+stopButton.addEventListener('click', stopBroadcast);
 
 function stopBroadcast() {
-    // Close all peer connections
-    peerConnections.forEach(pc => pc.close());
-    peerConnections.clear();
-
-    // Stop local stream
+    // Stop all tracks
     if (localStream) {
         localStream.getTracks().forEach(track => track.stop());
         localStream = null;
     }
 
+    // Close all peer connections
+    peerConnections.forEach((pc, viewerId) => {
+        pc.close();
+    });
+    peerConnections.clear();
+
     // Update UI
+    document.getElementById('sessionSetup').style.display = 'block';
     startButton.style.display = 'inline-block';
     stopButton.style.display = 'none';
     statusText.textContent = 'Ready to broadcast';
@@ -125,7 +161,11 @@ function stopBroadcast() {
     viewerCount = 0;
     viewerCountNumber.textContent = '0';
 
-    console.log('Broadcasting stopped');
+    // Notify server if we had a session
+    if (currentSessionId) {
+        console.log('Stopping broadcast for session:', currentSessionId);
+        currentSessionId = null;
+    }
 }
 
 // Handle new viewer
@@ -234,8 +274,95 @@ socket.on('viewer-disconnected', (viewerId) => {
     }
 });
 
+// Handle force stop from server (e.g., when another client stops the session)
+socket.on('force-stop-broadcast', () => {
+    console.log('Forced to stop broadcast by server');
+    stopBroadcast();
+});
+
 // Handle socket disconnection
 socket.on('disconnect', () => {
     console.log('Disconnected from server');
     stopBroadcast();
 });
+
+// Handle sessions list updates
+socket.on('sessions-update', (sessionsList) => {
+    console.log('Received sessions update:', sessionsList);
+    updateSessionsTable(sessionsList);
+});
+
+// Update sessions table
+async function updateSessionsTable(sessionsList) {
+    const tbody = document.getElementById('sessionsTableBody');
+
+    if (!sessionsList || sessionsList.length === 0) {
+        tbody.innerHTML = `
+      <tr>
+        <td colspan="4" style="padding: 2rem; text-align: center; color: var(--text-secondary);">
+          No active sessions. Start broadcasting to see your session here.
+        </td>
+      </tr>
+    `;
+        return;
+    }
+
+    // Get network base URL
+    let baseUrl;
+    try {
+        const response = await fetch('/api/server-ip');
+        const data = await response.json();
+        baseUrl = `http://${data.ip}:${data.port}/viewer.html?id=`;
+    } catch (err) {
+        const protocol = window.location.protocol;
+        const hostname = window.location.hostname;
+        const port = window.location.port;
+        const portStr = port ? `:${port}` : '';
+        baseUrl = `${protocol}//${hostname}${portStr}/viewer.html?id=`;
+    }
+
+    tbody.innerHTML = sessionsList.map(session => `
+    <tr>
+      <td style="padding: 1rem; border-bottom: 1px solid var(--border-glass); color: var(--text-primary);">
+        ${escapeHtml(session.sessionId)}
+        ${session.sessionId === currentSessionId ? '<span style="color: var(--accent-primary); font-size: 0.8rem;"> (You)</span>' : ''}
+      </td>
+      <td style="padding: 1rem; border-bottom: 1px solid var(--border-glass); text-align: center; color: var(--text-primary);">
+        👥 ${session.viewerCount}
+      </td>
+      <td style="padding: 1rem; border-bottom: 1px solid var(--border-glass);">
+        <code style="font-size: 0.85rem; color: var(--accent-primary);">${baseUrl}${escapeHtml(session.sessionId)}</code>
+      </td>
+      <td style="padding: 1rem; border-bottom: 1px solid var(--border-glass); text-align: center;">
+        ${session.hasBroadcaster ?
+            `<button onclick="stopSession('${escapeHtml(session.sessionId)}')" style="padding: 0.5rem 1rem; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85rem;">
+            ⏹️ Stop
+          </button>` :
+            '<span style="color: var(--text-secondary);">⚪ Inactive</span>'}
+      </td>
+    </tr>
+  `).join('');
+}
+
+// Stop a specific session
+function stopSession(sessionId) {
+    if (confirm(`Stop session "${sessionId}"?`)) {
+        console.log('Stopping session:', sessionId);
+        socket.emit('stop-session', sessionId);
+
+        // If it's our session, also stop local broadcast
+        if (sessionId === currentSessionId) {
+            stopBroadcast();
+        }
+    }
+}
+
+// Escape HTML to prevent XSS
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Request sessions list on load
+socket.emit('request-sessions');

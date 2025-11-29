@@ -10,6 +10,27 @@ let broadcasterId = null;
 let isPlaying = true;
 const FRAME_STEP = 1 / 30; // ~30fps, step by one frame
 
+// Get session ID from URL
+const urlParams = new URLSearchParams(window.location.search);
+const sessionId = urlParams.get('id');
+
+// Validate session ID
+if (!sessionId) {
+    statusText.textContent = 'Error: No session ID provided';
+    statusDot.style.display = 'none';
+    const placeholderIcon = placeholder.querySelector('.placeholder-icon');
+    const placeholderTitle = placeholder.querySelector('h2');
+    const placeholderText = placeholder.querySelector('p');
+    placeholderIcon.textContent = '⚠️';
+    placeholderTitle.textContent = 'Invalid URL';
+    placeholderText.innerHTML = 'No session ID found in URL.<br>Expected format: viewer.html?id=session-name';
+    console.error('No session ID in URL');
+} else {
+    console.log('Joining session:', sessionId);
+    // Update header with session name
+    document.querySelector('header h1').textContent = `🖥️ Viewer - ${sessionId}`;
+}
+
 // Playback control functions
 function togglePlayPause() {
     const video = remoteVideo;
@@ -121,8 +142,10 @@ const configuration = {
 // Connect to server as viewer
 socket.on('connect', () => {
     console.log('Connected to server');
-    socket.emit('join-viewer');
-    statusText.textContent = 'Waiting for broadcast...';
+    if (sessionId) {
+        socket.emit('join-viewer', sessionId);
+        statusText.textContent = 'Waiting for broadcast...';
+    }
 });
 
 // Handle broadcaster available notification
