@@ -70,6 +70,12 @@ const configuration = {
 // Start broadcasting
 startButton.addEventListener('click', async () => {
     try {
+        // Check if browser supports screen sharing
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+            alert('Screen sharing is not supported on this device/browser.\n\nScreen broadcasting requires:\n- Desktop Chrome, Firefox, Edge, or Safari\n- Screen sharing does NOT work on mobile devices');
+            return;
+        }
+
         // Get and validate session name
         const sessionName = document.getElementById('sessionName').value.trim();
         const validation = validateSessionName(sessionName);
@@ -108,7 +114,7 @@ startButton.addEventListener('click', async () => {
         };
 
         // Update UI
-        document.getElementById('sessionSetup').style.display = 'none';
+        document.getElementById('sessionName').disabled = true; // Disable input while broadcasting
         startButton.style.display = 'none';
         stopButton.style.display = 'inline-block';
         statusText.textContent = `Broadcasting session: ${currentSessionId}`;
@@ -129,7 +135,18 @@ startButton.addEventListener('click', async () => {
         console.log('Broadcasting started successfully');
     } catch (err) {
         console.error('Error starting broadcast:', err);
-        alert('Failed to start broadcast. Please make sure you granted screen sharing permission.');
+
+        // Provide specific error messages
+        if (err.name === 'NotAllowedError') {
+            alert('Screen sharing permission denied. Please allow screen sharing to broadcast.');
+        } else if (err.name === 'NotFoundError') {
+            alert('No screen/window selected. Please select a screen or window to share.');
+        } else if (err.name === 'AbortError') {
+            alert('Screen sharing was cancelled. Please click Start Broadcasting and select a screen to share.');
+        } else {
+            alert('Failed to start broadcast: ' + err.message);
+        }
+
         currentSessionId = null;
     }
 });
@@ -151,7 +168,9 @@ function stopBroadcast() {
     peerConnections.clear();
 
     // Update UI
-    document.getElementById('sessionSetup').style.display = 'block';
+    document.getElementById('sessionName').disabled = false; // Re-enable input
+    document.getElementById('sessionName').value = ''; // Clear session name input
+    document.getElementById('sessionError').style.display = 'none'; // Hide any errors
     startButton.style.display = 'inline-block';
     stopButton.style.display = 'none';
     statusText.textContent = 'Ready to broadcast';
@@ -161,9 +180,10 @@ function stopBroadcast() {
     viewerCount = 0;
     viewerCountNumber.textContent = '0';
 
-    // Notify server if we had a session
+    // Notify server to remove session
     if (currentSessionId) {
-        console.log('Stopping broadcast for session:', currentSessionId);
+        console.log('Notifying server to stop session:', currentSessionId);
+        socket.emit('stop-session', currentSessionId);
         currentSessionId = null;
     }
 }
@@ -323,25 +343,39 @@ async function updateSessionsTable(sessionsList) {
 
     tbody.innerHTML = sessionsList.map(session => `
     <tr>
-      <td style="padding: 1rem; border-bottom: 1px solid var(--border-glass); color: var(--text-primary);">
+      <td>
         ${escapeHtml(session.sessionId)}
-        ${session.sessionId === currentSessionId ? '<span style="color: var(--accent-primary); font-size: 0.8rem;"> (You)</span>' : ''}
+        ${session.sessionId === currentSessionId ? '<span class="session-label-you"> (You)</span>' : ''}
       </td>
-      <td style="padding: 1rem; border-bottom: 1px solid var(--border-glass); text-align: center; color: var(--text-primary);">
+      <td class="center">
         👥 ${session.viewerCount}
       </td>
-      <td style="padding: 1rem; border-bottom: 1px solid var(--border-glass);">
-        <code style="font-size: 0.85rem; color: var(--accent-primary);">${baseUrl}${escapeHtml(session.sessionId)}</code>
+      <td>
+        <code class="session-url">${baseUrl}${escapeHtml(session.sessionId)}</code>
       </td>
-      <td style="padding: 1rem; border-bottom: 1px solid var(--border-glass); text-align: center;">
+      <td class="center">
         ${session.hasBroadcaster ?
-            `<button onclick="stopSession('${escapeHtml(session.sessionId)}')" style="padding: 0.5rem 1rem; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85rem;">
+            `<button onclick="stopSession('${escapeHtml(session.sessionId)}')" class="stop-session-btn">
             ⏹️ Stop
           </button>` :
-            '<span style="color: var(--text-secondary);">⚪ Inactive</span>'}
+            session.viewerCount > 0 ?
+                `<button onclick="rejoinSession('${escapeHtml(session.sessionId)}')" class="rejoin-session-btn">
+            📡 Broadcast
+          </button>` :
+                '<span class="status-inactive">⚪ Inactive</span>'}
       </td>
     </tr>
   `).join('');
+}
+
+// Rejoin/broadcast to an existing session
+function rejoinSession(sessionId) {
+    // Set the session name
+    document.getElementById('sessionName').value = sessionId;
+    document.getElementById('sessionName').disabled = false;
+
+    // Trigger start broadcast
+    startButton.click();
 }
 
 // Stop a specific session

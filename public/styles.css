@@ -38,7 +38,7 @@ body::before {
   left: 0;
   right: 0;
   bottom: 0;
-  background: 
+  background:
     radial-gradient(circle at 20% 30%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
     radial-gradient(circle at 80% 70%, rgba(139, 92, 246, 0.1) 0%, transparent 50%);
   pointer-events: none;
@@ -147,17 +147,20 @@ button span {
   z-index: 1;
 }
 
+.primary,
 #startBroadcast {
   background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
   color: white;
   box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
 }
 
+.primary:hover,
 #startBroadcast:hover {
   box-shadow: 0 6px 30px rgba(99, 102, 241, 0.6);
   transform: translateY(-2px);
 }
 
+.primary:disabled,
 #startBroadcast:disabled {
   background: var(--bg-secondary);
   cursor: not-allowed;
@@ -165,12 +168,14 @@ button span {
   opacity: 0.5;
 }
 
+.secondary,
 #stopBroadcast {
   background: linear-gradient(135deg, var(--danger), #dc2626);
   color: white;
   box-shadow: 0 4px 20px rgba(239, 68, 68, 0.4);
 }
 
+.secondary:hover,
 #stopBroadcast:hover {
   box-shadow: 0 6px 30px rgba(239, 68, 68, 0.6);
   transform: translateY(-2px);
@@ -205,9 +210,12 @@ button span {
 }
 
 @keyframes pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.5;
   }
@@ -239,6 +247,7 @@ button span {
     opacity: 0;
     transform: scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
@@ -247,7 +256,7 @@ button span {
 
 /* Viewer count */
 #viewerCount {
-  margin-top: 1rem;
+  margin-top: -0.1em;
   padding: 0.75rem 1.5rem;
   background: var(--bg-glass);
   border: 1px solid var(--border-glass);
@@ -275,25 +284,195 @@ button span {
   opacity: 0.5;
 }
 
+/* Broadcaster Controls */
+.controls-row {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.session-input {
+  flex: 1;
+  min-width: 200px;
+  max-width: 300px;
+  padding: 0.75rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-glass);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+
+.flex-no-shrink {
+  flex-shrink: 0;
+}
+
+/* Remove default margins when inside controls-row */
+.controls-row button {
+  margin: 0;
+}
+
+.controls-row #status {
+  margin-top: 0;
+}
+
+.controls-row #viewerCount {
+  margin-top: 0;
+}
+
+.session-error {
+  color: #ff6b6b;
+  font-size: 0.85rem;
+  display: none;
+  margin-bottom: 1rem;
+}
+
+.network-info {
+  display: none;
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  border: 1px solid var(--border-glass);
+}
+
+.network-info-header {
+  margin-bottom: 0.75rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.network-info-content {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.viewer-url-code {
+  flex: 1;
+  padding: 0.5rem;
+  background: var(--bg-primary);
+  border-radius: 6px;
+  font-size: 0.9rem;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.copy-button {
+  padding: 0.5rem 1rem;
+  background: var(--accent-primary);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* Sessions Table */
+.sessions-container {
+  margin-top: 1.5rem;
+}
+
+.sessions-title {
+  margin-bottom: 1rem;
+  color: var(--text-primary);
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.sessions-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.sessions-table thead tr {
+  background: var(--bg-primary);
+}
+
+.sessions-table th {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-glass);
+}
+
+.sessions-table th.center {
+  text-align: center;
+}
+
+.sessions-table td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-glass);
+  color: var(--text-primary);
+}
+
+.sessions-table td.center {
+  text-align: center;
+}
+
+.session-url {
+  font-size: 0.85rem;
+  color: var(--accent-primary);
+}
+
+.stop-session-btn {
+  padding: 0.5rem 1rem;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.rejoin-session-btn {
+  padding: 0.5rem 1rem;
+  background: var(--accent-primary);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.session-label-you {
+  color: var(--accent-primary);
+  font-size: 0.8rem;
+}
+
+.status-live {
+  color: #4ade80;
+}
+
+.status-inactive {
+  color: var(--text-secondary);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   header h1 {
     font-size: 2rem;
   }
-  
+
   header p {
     font-size: 1rem;
   }
-  
+
   main {
     padding: 2rem 1rem;
   }
-  
+
   button {
     padding: 0.875rem 2rem;
     font-size: 0.95rem;
   }
-  
+
   .glass-card {
     padding: 1.5rem;
   }

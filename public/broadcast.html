@@ -16,67 +16,58 @@
 
   <main>
     <div id="controls" class="glass-card controls">
-      <div id="sessionSetup" style="display: flex; gap: 1rem; align-items: flex-start; flex-wrap: wrap;">
-        <div style="flex: 1; min-width: 250px;">
-          <input type="text" id="sessionName" placeholder="session-name" pattern="[a-zA-Z0-9_-]+"
-            style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-glass); background: var(--bg-secondary); color: var(--text-primary); font-size: 1rem;"
-            required />
-          <div id="sessionError" style="color: #ff6b6b; font-size: 0.85rem; margin-top: 0.25rem; display: none;"></div>
-        </div>
-        <button id="startButton" class="primary" style="margin: 0;">
+      <!-- Main controls row -->
+      <div class="controls-row">
+        <input type="text" id="sessionName" placeholder="session-name" pattern="[a-zA-Z0-9_-]+" class="session-input" />
+
+        <button id="startButton">
           <span>🎥 Start Broadcasting</span>
         </button>
+
+        <button id="stopButton" style="display: none;">
+          <span>⏹️ Stop Broadcasting</span>
+        </button>
+
+        <div id="status">
+          <span class="status-dot"></span>
+          <span id="statusText">Ready to broadcast</span>
+        </div>
+
+        <div id="viewerCount" style="display: none;">
+          <span>👥 Viewers: <strong id="viewerCountNumber">0</strong></span>
+        </div>
       </div>
 
-      <button id="stopButton" class="secondary" style="display: none;">
-        <span>⏹️ Stop Broadcasting</span>
-      </button>
+      <div id="sessionError" class="session-error"></div>
 
-      <div id="status">
-        <span class="status-dot"></span>
-        <span id="statusText">Ready to broadcast</span>
-      </div>
-
-      <div id="viewerCount" style="display: none;">
-        <span>👥 Viewers: <strong id="viewerCountNumber">0</strong></span>
-      </div>
-
-      <div id="networkInfo"
-        style="display: none; margin-top: 1.5rem; padding: 1.5rem; background: var(--bg-secondary); border-radius: 12px; border: 1px solid var(--border-glass);">
-        <div style="margin-bottom: 0.75rem; color: var(--text-secondary); font-size: 0.9rem;">
+      <div id="networkInfo" class="network-info">
+        <div class="network-info-header">
           Share with viewers on your network:
         </div>
-        <div style="display: flex; gap: 0.5rem; align-items: center;">
-          <code id="viewerUrl"
-            style="flex: 1; padding: 0.5rem; background: var(--bg-primary); border-radius: 6px; font-size: 0.9rem; overflow-x: auto; white-space: nowrap;"></code>
-          <button onclick="copyViewerUrl(event)"
-            style="padding: 0.5rem 1rem; background: var(--accent-primary); color: white; border: none; border-radius: 6px; cursor: pointer; white-space: nowrap;">
+        <div class="network-info-content">
+          <code id="viewerUrl" class="viewer-url-code"></code>
+          <button onclick="copyViewerUrl(event)" class="copy-button">
             <span>📋 Copy</span>
           </button>
         </div>
       </div>
 
       <!-- Active Sessions Table -->
-      <div id="sessionsTable" style="margin-top: 1.5rem;">
-        <h3 style="margin-bottom: 1rem; color: var(--text-primary);">Active Broadcast Sessions</h3>
-        <div style="overflow-x: auto;">
-          <table
-            style="width: 100%; border-collapse: collapse; background: var(--bg-secondary); border-radius: 8px; overflow: hidden;">
+      <div id="sessionsTable" class="sessions-container">
+        <h3 class="sessions-title">Active Broadcast Sessions</h3>
+        <div class="table-wrapper">
+          <table class="sessions-table">
             <thead>
-              <tr style="background: var(--bg-primary);">
-                <th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--border-glass);">Session
-                  Name</th>
-                <th style="padding: 0.75rem; text-align: center; border-bottom: 1px solid var(--border-glass);">Viewers
-                </th>
-                <th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--border-glass);">Viewer URL
-                </th>
-                <th style="padding: 0.75rem; text-align: center; border-bottom: 1px solid var(--border-glass);">Actions
-                </th>
+              <tr>
+                <th>Session Name</th>
+                <th class="center">Viewers</th>
+                <th>Viewer URL</th>
+                <th class="center">Actions</th>
               </tr>
             </thead>
             <tbody id="sessionsTableBody">
               <tr>
-                <td colspan="4" style="padding: 2rem; text-align: center; color: var(--text-secondary);">
+                <td colspan="4" class="center" style="padding: 2rem; text-align: center; color: var(--text-secondary);">
                   No active sessions. Start broadcasting to see your session here.
                 </td>
               </tr>
