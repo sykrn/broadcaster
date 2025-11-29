@@ -5,9 +5,14 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "generate-cert": "openssl req -nodes -new -x509 -keyout server.key -out server.cert -days 365 -subj '/C=US/ST=State/L=City/O=Organization/CN=localhost'"
   },
-  "keywords": ["webrtc", "screensharing", "broadcast"],
+  "keywords": [
+    "webrtc",
+    "screensharing",
+    "broadcast"
+  ],
   "author": "",
   "license": "MIT",
   "dependencies": {

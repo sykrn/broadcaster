@@ -1,11 +1,13 @@
 const express = require('express');
-const app = express();
-const http = require('http').createServer(app);
-const io = require('socket.io')(http);
+const https = require('https');
+const http = require('http');
+const socketIo = require('socket.io');
+const os = require('os');
+const fs = require('fs');
 const path = require('path');
 
+const app = express();
 const PORT = process.env.PORT || 3000;
-const os = require('os');
 
 // Get local IP address
 function getLocalIP() {
@@ -24,7 +26,35 @@ function getLocalIP() {
 // Serve static files
 app.use(express.static('public'));
 
-// API endpoint to get server IP
+// Try to create HTTPS server, fallback to HTTP if no certificates
+let server;
+let protocol = 'http';
+
+try {
+  const keyPath = path.join(__dirname, 'server.key');
+  const certPath = path.join(__dirname, 'server.cert');
+
+  if (fs.existsSync(keyPath) && fs.existsSync(certPath)) {
+    const options = {
+      key: fs.readFileSync(keyPath),
+      cert: fs.readFileSync(certPath)
+    };
+    server = https.createServer(options, app);
+    protocol = 'https';
+    console.log('✅ HTTPS enabled with self-signed certificate');
+  } else {
+    server = http.createServer(app);
+    console.log('⚠️  Running on HTTP (certificates not found). Screen sharing may not work over network.');
+    console.log('   To enable HTTPS, run: npm run generate-cert');
+  }
+} catch (err) {
+  console.log('⚠️  Failed to load certificates, using HTTP:', err.message);
+  server = http.createServer(app);
+}
+
+const io = socketIo(server);
+
+// API endpoint to return server network IP
 app.get('/api/server-ip', (req, res) => {
   res.json({ ip: getLocalIP(), port: PORT });
 });
@@ -232,11 +262,17 @@ io.on('connection', (socket) => {
 // Call broadcastSessionsList when sessions change
 // We'll call it after session creation, viewer join/leave, broadcaster join/disconnect
 
-http.listen(PORT, '0.0.0.0', () => {
+server.listen(PORT, '0.0.0.0', () => {
   const localIP = getLocalIP();
   console.log(`Server running on:`);
-  console.log(`  Local:   http://localhost:${PORT}`);
-  console.log(`  Network: http://${localIP}:${PORT}`);
-  console.log(`\nShare this URL for viewers on your network:`);
-  console.log(`  http://${localIP}:${PORT}/viewer.html`);
+  console.log(`  Local:   ${protocol}://localhost:${PORT}`);
+  console.log(`  Network: ${protocol}://${localIP}:${PORT}`);
+  console.log('');
+  console.log(`Share this URL for viewers on your network:`);
+  console.log(`  ${protocol}://${localIP}:${PORT}/viewer.html`);
+
+  if (protocol === 'https') {
+    console.log('');
+    console.log('⚠️  Note: First-time users must accept the self-signed certificate warning in their browser');
+  }
 });

@@ -16,13 +16,19 @@ A clean and modern web-based screen sharing application built with WebRTC techno
 ## Features
 
 ### Core Functionality
-- **Real-time Screen Sharing**: WebRTC-based peer-to-peer streaming
-- **Low Latency**: Uses UDP (via WebRTC's SRTP) for smooth, efficient streaming
-- **Multiple Viewers**: Support for unlimited simultaneous viewers
-- **Network Access**: Share across devices on the same Wi-Fi network
-- **Fully Offline**: Works on local network without internet connection
-- **No External Dependencies**: No STUN/TURN servers required for local network
-- **Secure**: End-to-end encrypted via DTLS-SRTP
+- 🔒 **Fully Offline** - Works entirely on local network, no internet required
+- 🔐 **HTTPS Support** - Self-signed certificates for secure context over network
+- 🎥 **Real-time Screen Broadcasting** - Share your screen with multiple viewers simultaneously
+- 🌐 **Network Access** - Access from any device on the same Wi-Fi/LAN
+- 📱 **Mobile Responsive** - Optimized viewing experience on phones and tablets
+- 🖥️ **Multi-Session Support** - Multiple users can broadcast different sessions simultaneously
+- ⚡ **WebRTC Direct Connection** - Low latency peer-to-peer streaming
+- 🎮 **Advanced Viewer Controls:**
+  - ⏯️ Play/Pause with frame-by-frame navigation
+  - 🖼️ Picture-in-Picture mode
+  - ⛶ Fullscreen with auto-rotate on mobile
+- 📊 **Session Management** - View all active sessions with live viewer counts
+- 🔄 **Re-broadcast** - Quickly rejoin inactive sessions with waiting viewers
 
 ### Viewer Controls
 - **⏮️ / ⏭️ Frame Stepping**: Navigate frame-by-frame when paused
@@ -51,10 +57,31 @@ A clean and modern web-based screen sharing application built with WebRTC techno
 npm install
 ```
 
+### HTTPS Setup (Required for Network Screen Sharing)
+
+Screen sharing requires a **secure context (HTTPS)** when accessed over network. The server automatically uses HTTPS if it finds SSL certificates.
+
+**Generate SSL certificate (one-time setup):**
+
+```bash
+npm run generate-cert
+```
+
+This creates `server.key` and `server.cert` files that enable HTTPS.
+
 2. Start the server:
 ```bash
 npm start
 ```
+
+The server will automatically:
+- Use **HTTPS** if certificates exist → `https://localhost:3000`
+- Fall back to **HTTP** if no certificates → `http://localhost:3000`
+
+> **Note:** First-time users must accept the self-signed certificate warning in their browser:
+> 1. Click "Advanced" or "Show Details"
+> 2. Click "Proceed to [IP address] (unsafe)" or "Accept the Risk"
+> 3. This only needs to be done once per browser
 
 Or for development with auto-reload:
 ```bash
@@ -75,23 +102,81 @@ Share this URL for viewers on your network:
 
 ### As a Broadcaster
 
-1. Open `http://localhost:3000/broadcast.html` in your browser
-2. Click **"🎥 Start Broadcasting"** button
-3. Select the screen/window you want to share in the browser dialog
-4. Click **"Share"** or **"Allow"** to grant permission
-5. A **shareable viewer URL** will appear with a **📋 Copy** button
-6. Share this URL with your audience
-7. Monitor the **viewer count** in real-time
-8. Click **"⏹️ Stop Broadcasting"** when done
+1. Open `https://localhost:3000/broadcast.html` in your browser
+2. **Enter a session name** (e.g., "meeting-room-1", "presentation-hall-a")
+   - Use alphanumeric characters, hyphens, and underscores
+   - 3-50 characters long
+3. Click **"🎥 Start Broadcasting"** button
+4. Select the screen/window you want to share in the browser dialog
+5. Click **"Share"** or **"Allow"** to grant permission
+6. A **shareable viewer URL** will appear with your session ID
+7. Share this URL with your audience
+8. Monitor the **viewer count** in real-time
+9. Click **"⏹️ Stop Broadcasting"** when done
+
+### Multi-Session Broadcasting
+
+**Multiple users can broadcast simultaneously with different session names!**
+
+#### How It Works
+
+- Each broadcaster creates a unique session with a custom name
+- Viewers join specific sessions using the session ID in the URL
+- All sessions are independent - no interference between them
+- Sessions table shows all active broadcasts on the network
+
+#### Example Scenario
+
+**Meeting Room A:**
+- Broadcaster enters session name: `meeting-room-a`
+- Shares URL: `https://192.168.1.100:3000/viewer.html?id=meeting-room-a`
+
+**Conference Hall:**
+- Another broadcaster enters: `conference-hall`
+- Shares URL: `https://192.168.1.100:3000/viewer.html?id=conference-hall`
+
+**Training Room:**
+- Third broadcaster enters: `training-101`
+- Shares URL: `https://192.168.1.100:3000/viewer.html?id=training-101`
+
+All three broadcasts run simultaneously on the same server!
+
+#### Session Management Table
+
+The broadcaster page shows an **Active Broadcast Sessions** table with:
+
+| Column | Description |
+|--------|-------------|
+| **Session Name** | The session identifier (shows "(You)" for your session) |
+| **Viewers** | Number of people watching this session |
+| **Viewer URL** | Shareable link with session ID |
+| **Actions** | Control buttons for each session |
+
+**Action Buttons:**
+- **⏹️ Stop** (Active sessions): Stop the broadcast
+- **📡 Broadcast** (Inactive with viewers): Re-join session if you refreshed
+- **⚪ Inactive** (No broadcaster, no viewers): Session is empty
+
+#### Re-broadcasting
+
+If you refresh the browser while broadcasting:
+1. Your session becomes **inactive** but stays in the table
+2. Viewers remain connected and waiting
+3. Click the **📡 Broadcast** button to rejoin
+4. Your screen sharing resumes for waiting viewers
+
+This is useful if you need to restart your browser or switch tabs!
 
 ### As a Viewer
 
-1. Open the viewer URL shared by the broadcaster:
-   - **Same device**: `http://localhost:3000/viewer.html`
-   - **Network device**: `http://192.168.100.102:3000/viewer.html`
-2. Wait for the broadcaster to start (if not already broadcasting)
-3. Video will appear automatically once broadcast begins
-4. Use playback controls to interact with the stream
+1. **Get the viewer URL** from the broadcaster (includes session ID)
+   - Format: `https://[SERVER-IP]:3000/viewer.html?id=session-name`
+2. Open the URL in your browser
+3. **Accept certificate warning** (first time only on HTTPS)
+4. Video will appear automatically once broadcast begins
+5. Use playback controls to interact with the stream
+
+**Important:** The URL must include the `?id=session-name` parameter to connect to the correct session!
 
 ### Viewer Controls
 
@@ -110,22 +195,53 @@ Share this URL for viewers on your network:
 - PiP mode keeps video on top while you work in other apps
 - Fullscreen provides immersive viewing, especially on mobile
 
-## Network Access
+### Network Access
 
-### Accessing from Other Devices
+To broadcast from one device and view from another on the same network:
 
-The application supports **local network streaming**:
+1. **Start the server** - The console will display both HTTP and HTTPS URLs
+2. **On broadcaster device** - Open the broadcast page:
+   - HTTPS: `https://[SERVER-IP]:3000/broadcast.html` (recommended)
+   - HTTP: `http://[SERVER-IP]:3000/broadcast.html` (localhost only)
+3. **On viewer devices** - Use the shareable URL with session ID:
+   - Format: `https://[SERVER-IP]:3000/viewer.html?id=session-name`
+   - You can copy this URL from the broadcaster interface
 
-1. **Start broadcasting** on your main computer
-2. **Get the network URL** displayed on the broadcaster page
-3. **Share the URL** with viewers on the same Wi-Fi network
-4. **Open the URL** on phones, tablets, or other computers
+> ⚠️ **Important:** Screen sharing over network requires **HTTPS**. Make sure you:
+> 1. Generated SSL certificates with `npm run generate-cert`
+> 2. Accepted the certificate warning on each device
 
-**Example URLs:**
-- Local: `http://localhost:3000/viewer.html`
-- Network: `http://192.168.100.102:3000/viewer.html`
+**Example:**
+```
+Server IP: 192.168.1.100
+Broadcaster: https://192.168.1.100:3000/broadcast.html
+Viewer: https://192.168.1.100:3000/viewer.html?id=meeting-room-1
+```
+### Troubleshooting
 
-### Troubleshooting Network Access
+### Screen Sharing Not Working Over Network
+
+**Symptom:** Error when clicking "Start Broadcasting" from a network device
+
+**Solution:** Screen sharing requires HTTPS over network. Follow these steps:
+
+1. **Generate SSL certificate:**
+   ```bash
+   npm run generate-cert
+   ```
+
+2. **Restart the server** - It will now use HTTPS
+
+3. **Accept the certificate warning** on each device:
+   - Navigate to `https://[IP]:3000`
+   - Click "Advanced" → "Proceed to [IP] (unsafe)"
+   - This is safe - it's your own local certificate
+
+4. **Use HTTPS URLs** for broadcasting:
+   - ✅ `https://192.168.1.100:3000/broadcast.html`
+   - ❌ `http://192.168.1.100:3000/broadcast.html`
+
+### Connection Issues
 
 **Can't connect from another device?**
 
@@ -143,18 +259,25 @@ The application supports **local network streaming**:
 
 ## Offline Operation
 
-**This application works completely offline on your local network!**
+This broadcaster is designed to work **completely offline** on a local network:
 
-### No Internet Required
+- ✅ No internet connection required
+- ✅ No external STUN/TURN servers
+- ✅ No external dependencies after installation
+- ✅ Self-signed HTTPS certificate (no CA needed)
+- ✅ Direct peer-to-peer WebRTC connections on LAN
 
-The application is configured to work **without any internet connection**:
+Perfect for:
+- Corporate presentations in conference rooms
+- Classroom broadcasting
+- Events with unreliable internet
+- Privacy-sensitive environments (no data leaves your network)
+- Remote locations with local Wi-Fi only
 
-- ✅ **No STUN servers** - Doesn't require Google's servers
-- ✅ **No TURN servers** - Direct peer-to-peer connections
-- ✅ **No external dependencies** - Everything runs locally
-- ✅ **Perfect for isolated networks** - Corporate, schools, offline events
-
-### How It Works Offline
+**How it works:**
+- Devices on the same network can communicate directly via local IP addresses
+- HTTPS is used for secure context (browser requirement), not for encryption over internet
+- No data is sent outside your local networkine
 
 1. **Server runs locally** on your computer (localhost:3000)
 2. **WebRTC uses local IPs** - Devices discover each other via local network
